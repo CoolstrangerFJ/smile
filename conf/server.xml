@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<!-- 基本配置信息 -->
+	<context port="80" version="1.0" charset="UTF-8" processor-thread-pool-size="3"/>
+	
+	<!-- 缓存区扩容分级 (KB) -->
+	<buffer-size tiny="1" small="4" medium="64" big="256" large="1024" huge="4096" />
+	
+	<!-- 静态资源缓存池 -->
+	<cache-pool>
+	
+		<!-- 高于最小值以后，才会开始清理过期缓存, 超过最大值以后, 不再缓存新的资源  (MB)-->
+		<size min="50" max="500" />
+		
+		<!-- 缓存超时清理时间  (minute)-->
+		<time-out>30</time-out>
+	</cache-pool>
+</config>
