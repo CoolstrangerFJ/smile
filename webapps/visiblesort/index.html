@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title>可视化排序</title>
+		<script src="js/jquery-1.11.0.min.js" type="text/javascript" charset="utf-8"></script>
+		
+		<style type="text/css">
+			#main {
+				height: 500px;
+				width: 100%;
+			}
+			.items{
+				float: left;
+				width: 4px;
+				height: 5px;
+				background:burlywood;
+				background: #DEB887;
+				/*margin-left: 1px;*/
+				border-style: solid;
+				border-color: #CCFFFF;
+				border-left-width: 1px;
+				border-right-width: 0px;
+				border-bottom-width: 0px;
+				border-top-width: 0px;
+				border-radius: 2px;
+				margin-top: 495px;
+			}
+			.moveItem1{
+				width:25px;
+				border-radius: 10px;
+				background: rgb(240,223,200);
+			}
+			.moveItem2{
+				width:20px;
+				border-radius: 9px;
+				background: rgb(236,215,185);
+			}
+			.moveItem3{
+				width:16px;
+				border-radius: 5px;
+				background: rgb(234,209,176);
+			}
+			.moveItem4{
+				width:12px;
+				border-radius: 5px;
+				background: rgb(231,203,165);
+			}
+			.moveItem5{
+				width:8px;
+				border-radius: 5px;
+				background: rgb(227,196,153);
+			}
+			.cursorItem{
+				background: red;
+			}
+			.fat{
+				width:6px;
+				border-style: none;
+			}
+			input{
+				float:left;
+				background-color: white; 
+			    padding: 3px 5px;
+			    text-align: center;
+			    color: #f44336; 
+   				border: 2px solid #f44336;
+			    /* text-decoration: none; */
+			    /* display: inline-block; */
+			    font-size: 12px;
+			    font-family:"宋体";
+			    margin: 4px 2px;
+			    transition-duration: 0.8s;
+			    cursor: pointer;
+			    border-radius: 5px;
+			}
+			input:hover {
+			    background-color: #f44336;
+			    color: white;
+			}
+			body{
+				background: #CCFFFF;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="main"></div>
+		<input type="button" id="random" value="生成随机数" />
+		<input type="button" id="stop" value="停止" />
+		<input type="button" id="bubbleSort" value="冒泡异步升序" />
+		<input type="button" id="rebubbleSort" value="冒泡异步降序" />
+		<input type="button" id="symRebubbleSort" value="冒泡同步升序" />
+		<input type="button" id="insertSort" value="插入同步升序" />
+		<input type="button" id="quickSort" value="快速排序" />
+	</body>
+	<script type="text/javascript">
+		var rand = new Array();
+		var n=150;
+		var id=0;
+		$(function(){
+			for(var x = 0; x < n; x++) {
+				var item = "<div id='"+x+"' class='items'></div>";
+				$("#main").append($(item));
+				rand[x]=5;
+			}
+			$(".items").mouseover(function(){
+				var eleid=$(this).attr("id");
+				var ele = "<span>"+rand[eleid]+"</span>";
+				$(this).html(ele);
+				itemsFatten(eleid);
+				}).mouseout(function(){
+					var eleid=$(this).attr("id");
+					$(this).empty();
+					itemsRestore(eleid);
+			});
+		});
+		
+		function itemsFatten(index){
+			index -= 4;
+			itemFatten(index++,"moveItem5");
+			itemFatten(index++,"moveItem4");
+			itemFatten(index++,"moveItem3");
+			itemFatten(index++,"moveItem2");
+			itemFatten(index++,"moveItem1");
+			itemFatten(index++,"moveItem2");
+			itemFatten(index++,"moveItem3");
+			itemFatten(index++,"moveItem4");
+			itemFatten(index,"moveItem5");
+		}
+		function itemFatten(index,styleName){
+			if(index>=0 && index <n){
+				$("#"+index).addClass(styleName);
+			}
+		}
+		
+		function itemsRestore(index){
+			index -= 4;
+			itemRestore(index++,"moveItem5");
+			itemRestore(index++,"moveItem4");
+			itemRestore(index++,"moveItem3");
+			itemRestore(index++,"moveItem2");
+			itemRestore(index++,"moveItem1");
+			itemRestore(index++,"moveItem2");
+			itemRestore(index++,"moveItem3");
+			itemRestore(index++,"moveItem4");
+			itemRestore(index++,"moveItem5");
+		}
+		function itemRestore(index,styleName){
+			if(index>=0 && index <n){
+				$("#"+index).removeClass(styleName);
+			}
+		}
+		
+		//生成随机数
+		$("#random").click(function(){
+			ran();
+		});
+		
+		$("#stop").click(function(){
+			setTimeout('clearTimeout(id)',0);
+			running = false;
+		});
+		
+		function ran(){
+			for(var x = 0; x < n; x++) {
+				rand[x] = Math.ceil(Math.random()*500);
+			}
+			show();
+			id = setTimeout(ran,40);
+		}
+
+		//冒泡（同步）
+		$("#symRebubbleSort").click(function(){
+			$(this).attr("disabled","disabled");
+			var bsarr = rand.slice();
+			cursor = 0;
+			sx=0;
+			symRebubbleSort(bsarr);
+			swapAnimation();
+		});
+
+		function symRebubbleSort(bsarr){
+			for(var x=0;x<n-1;x++){
+				for(var y=0;y<n-x-1;y++){
+					if(bsarr[y]>bsarr[y+1]){
+						swap(bsarr,y,y+1);
+					}
+				}
+			}
+		}
+
+		//冒泡升序（异步）
+		var i=0;
+		var j=0;
+		var running = false;
+		$("#bubbleSort").click(function(){
+			if(!running){
+				i=0;j=0;running=true;
+			}
+			bubble();
+		});
+		function bubble(){
+			if(i<n-1){
+				if(j>=n-i-1){
+					j=0;i++;
+					id=setTimeout(bubble);
+				}else{
+					if(rand[j]>rand[j+1]){
+						var t=rand[j];
+						rand[j]=rand[j+1];
+						rand[j+1]=t;
+						showswap(j,j+1);
+						id=setTimeout(bubble);
+					}else{
+						id=setTimeout(bubble);
+					}
+					j++;
+				}
+			}else{
+				running=false;
+			}
+		}
+		//冒泡降序（异步）
+		$("#rebubbleSort").click(function(){
+			if(!running){
+				i=0;j=0;running=true;
+			}
+			reverseBubble();
+		});
+		function reverseBubble(){
+			if(i<n-1){
+				if(j>=n-i-1){
+					j=0;i++;
+					id=setTimeout(reverseBubble);
+				}else{
+					if(rand[j]<rand[j+1]){
+						var t=rand[j];
+						rand[j]=rand[j+1];
+						rand[j+1]=t;
+						showswap(j,j+1);
+						id=setTimeout(reverseBubble);
+					}else{
+						id=setTimeout(reverseBubble);
+					}
+					j++;
+				}
+			}else{
+				running=false;
+			}
+		}
+		
+		//快排升序（同步）
+		var swapList = new Array();
+		var cursor = 0,sx = 0;
+		$("#quickSort").click(function(){
+			$(this).attr("disabled","disabled");
+			var qsArr = rand.slice();
+			cursor = 0;
+			sx=0;
+			quicksort(qsArr,0,n-1);
+			swapAnimation();
+		});
+		function quicksort(qsArr,head,tail){
+			var begin=head,end=tail;temp=head;
+			while(head < tail){
+				while(qsArr[tail] >= qsArr[temp] && tail > head){tail--;}
+				if(tail > head){
+					swap(qsArr,tail,temp);
+					temp=tail;
+				}
+				while(qsArr[head] <= qsArr[temp] && head < tail){head++;}
+				if(head < tail){
+					swap(qsArr,head,temp);
+					temp = head;
+				}
+			}
+			if(begin<temp-1){
+				quicksort(qsArr,begin,temp-1);
+			}
+			if(temp+1<end){
+				quicksort(qsArr,temp+1,end);
+			}
+		}
+		
+		
+		//插入排序（同步）
+		$("#insertSort").click(function(){
+			$(this).attr("disabled","disabled");
+			var isArr = rand.slice();
+			cursor = 0;
+			sx=0;
+			insertSort(isArr);
+			swapAnimation();
+		});
+		
+		function insertSort(isArr){
+			for(var x=1;x<isArr.length;x++){
+				for(var y=x;y>0 && isArr[y-1]>isArr[y];y--){
+					swap(isArr,y-1,y);
+				}
+			}
+		}
+		
+		
+		//动画模块
+		var tempA=0;tempB=0;
+		function swap(qsArr,a,b){
+			var t=qsArr[a];
+			qsArr[a]=qsArr[b];
+			qsArr[b]=t;
+			swapList[cursor]=new Array();
+			swapList[cursor][0]=a;
+			swapList[cursor][1]=b;
+			cursor++;
+		}
+		var sx = 0;
+		function swapAnimation(){
+			if(sx<cursor){
+				setTimeout("showswapCache(swapList[sx][0],swapList[sx][1])");
+			}else{
+				i=0;
+				setTimeout(terminal);
+			}
+		}
+		function showswapCache(a,b){
+			sx++;
+			var t=rand[a];
+			rand[a]=rand[b];
+			rand[b]=t;
+			tempA = a;
+			tempB = b;
+			setTimeout("showSwapColor(tempA,tempB)");
+		}
+		
+		function show(){
+			for(var x = 0; x < n; x++) {
+				showLen(x,rand[x]);
+			}
+		}
+		
+		function showSwapColor(a,b){
+			showswap(a,b);
+			showLenColor(a);
+			showLenColor(b);
+			tempA = a;
+			tempB = b;
+			setTimeout("recolor(tempA,tempB)",3);
+		}
+		
+		function terminal(){
+			if(i<n){
+				$("#"+i).addClass("cursorItem");
+				i++;
+				setTimeout(terminal,5);
+			}else{
+				for(i=0;i<n;i++){
+					$("#"+i).removeClass("cursorItem");
+				}
+				$("input").removeAttr("disabled");
+			}
+		}
+		
+		
+		
+		
+		
+		
+		//变色效果
+		function recolor(a,b){
+//			$("#"+a).removeClass("cursorItem").removeClass("fat");
+//			$("#"+b).removeClass("cursorItem").removeClass("fat");
+			$("#"+a).removeClass("cursorItem");
+			$("#"+b).removeClass("cursorItem");
+			setTimeout(swapAnimation);
+		}
+		
+		function showswap(a,b){
+			showLen(a,rand[a]);
+			showLen(b,rand[b]);
+		}
+		
+		function showLenColor(index){
+			index = "#"+index;
+			$(index).addClass("cursorItem");
+//			$(index).addClass("cursorItem").addClass("fat");
+		}
+		
+		function showLen(index,value){
+			index = "#"+index;
+			$(index).css("height",value);
+			$(index).css("margin-top",500-value);
+		}
+		
+	</script>
+</html>
