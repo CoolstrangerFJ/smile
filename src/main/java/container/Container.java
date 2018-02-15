@@ -10,13 +10,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+import connecter.HttpConnecterNIO;
 import connecter.request.Request;
 import connecter.response.Response;
 import container.dynamicResource.DynamicResourceManager;
 import container.staticResource.StaticResourceManager;
 import launcher.Configuration;
-import launcher.HttpConnecterNIO;
 
 /**
  * @author CoolStranger

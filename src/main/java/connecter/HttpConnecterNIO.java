@@ -1,7 +1,7 @@
 /**
  * 
  */
-package launcher;
+package connecter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,6 +13,7 @@ import java.nio.channels.ServerSocketChannel;
 import connecter.selector.InputSelector;
 import connecter.selector.OutputSelector;
 import container.Container;
+import launcher.Configuration;
 
 /**
  * @author CoolStranger
@@ -52,16 +53,6 @@ public class HttpConnecterNIO {
 		// outputSelector.run();
 		new Thread(outputSelector).start();
 		new Thread(new InputSelector(readSelector, outputSelector)).start();
-	}
-
-	public static void main(String[] args) {
-		HttpConnecterNIO server = new HttpConnecterNIO();
-		try {
-			server.launch();
-		} catch (Throwable e) {
-			System.out.println("启动失败");
-			e.printStackTrace();
-		}
 	}
 
 	/**
