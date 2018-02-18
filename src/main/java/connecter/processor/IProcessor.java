@@ -12,7 +12,7 @@ import java.nio.channels.SocketChannel;
  * @time 下午11:54:50
  *
  */
-public interface IProcessor {
+public interface IProcessor extends Runnable{
 
 	void tryRead();
 

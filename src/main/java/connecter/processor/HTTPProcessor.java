@@ -30,7 +30,7 @@ import util.Background;
  * @time 下午11:55:10
  *
  */
-public class HTTPProcessor implements IProcessor, Runnable {
+public class HTTPProcessor implements IProcessor {
 
 	private static ExecutorService pool = Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
 	private static ScheduledThreadPoolExecutor cleaner = Background.getInstance().getPool();
