@@ -24,9 +24,7 @@ import connecter.processor.IProcessor;
 public class OutputSelector implements Runnable {
 
 	private ConcurrentLinkedQueue<IProcessor> processorQueue = new ConcurrentLinkedQueue<>();
-	// private ConcurrentLinkedQueue<>
 	private Selector writeSelector;
-	// private AtomicBoolean hasKey = new AtomicBoolean();
 
 	public OutputSelector(Selector writeSelector) {
 		this.writeSelector = writeSelector;
@@ -42,27 +40,19 @@ public class OutputSelector implements Runnable {
 				while ((wait4write = processorQueue.poll()) != null) {
 					try {
 						wait4write.getSocketChannel().register(writeSelector, SelectionKey.OP_WRITE, wait4write);
-					} catch (ClosedChannelException e) {
-						// e.printStackTrace();
-					} catch (CancelledKeyException e) {
-						// e.printStackTrace();
+						count++;
+					} catch (ClosedChannelException | CancelledKeyException e) {
 					}
 				}
 				count += writeSelector.selectNow();
 
-				// if (count == 0 && !hasKey.get()) {
 				if (count == 0) {
 					// 若无事件,休息一下能极大地降低CPU性能浪费
-					// try {
 					Thread.sleep(1);
-					// } catch (InterruptedException e) {
-					// throw new RuntimeException(e);
-					// }
 					continue;
 				}
 
 				Set<SelectionKey> selectedKeys = writeSelector.selectedKeys();
-				// hasKey.set(false);
 				Iterator<SelectionKey> iterator = selectedKeys.iterator();
 				while (iterator.hasNext()) {
 					SelectionKey key = iterator.next();

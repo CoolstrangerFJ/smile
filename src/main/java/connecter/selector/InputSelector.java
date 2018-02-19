@@ -34,15 +34,18 @@ public class InputSelector implements Runnable {
 		while (true) {
 			try {
 				selector.select();
+				//从选择器中获取事件
 				Set<SelectionKey> selectedKeys = selector.selectedKeys();
 				Iterator<SelectionKey> iterator = selectedKeys.iterator();
+				//遍历事件集合
 				while (iterator.hasNext()) {
 					SelectionKey key = iterator.next();
 					iterator.remove();
 
+					//根据事件类型处理
 					if (key.isAcceptable()) {
-						ServerSocketChannel s = (ServerSocketChannel) key.channel();
-						SocketChannel socketChannel = s.accept();
+						ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+						SocketChannel socketChannel = serverSocketChannel.accept();
 						socketChannel.configureBlocking(false);
 						SelectionKey newKey = socketChannel.register(selector, SelectionKey.OP_READ);
 						IProcessor processor = ProcessorFactory.createProcessor(socketChannel, outputSelector);
@@ -54,7 +57,7 @@ public class InputSelector implements Runnable {
 				}
 			} catch (IOException e) {
 			} catch (Throwable e) {
-//				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 	}

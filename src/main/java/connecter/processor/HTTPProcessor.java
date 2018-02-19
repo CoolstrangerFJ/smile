@@ -94,23 +94,15 @@ public class HTTPProcessor implements IProcessor {
 
 	/**
 	 *
-	 * @throws IOException 
+	 * @throws IOException
 	 * @see connecter.processor.IProcessor#process()
 	 */
 	@Override
 	public void process() throws IOException {
 		Request request = null;
 		while ((request = reqQueue.peek()) != null) {
-			Response response = ResponseFactory.createResponse(socketChannel,request);
+			Response response = ResponseFactory.createResponse(socketChannel, request);
 			container.handle(request, response);
-//			String uri = request.getRequestURI();
-//			RequestDispatcher dispatcher = request.getRequestDispatcher(uri);
-//			try {
-//				// System.out.println("forwarding!");
-//				dispatcher.forward(request, response);
-//			} catch (Exception e) {
-//				throw new RuntimeException(e);
-//			}
 			reqQueue.poll();
 			response.ready4Write();
 			resQueue.add(response);
@@ -121,33 +113,36 @@ public class HTTPProcessor implements IProcessor {
 
 	/**
 	 *
-	 * @throws IOException 
+	 * @throws IOException
 	 * @see connecter.processor.IProcessor#tryWrite()
 	 */
 	@Override
-	public void tryWrite() throws IOException {
-		ResponseWriter peekWriter = null;
-		boolean done = false;
+	public void tryWrite() {
+		try {
+			ResponseWriter peekWriter = null;
+			boolean done = false;
 
-		while ((peekWriter = resQueue.peek()) != null) {
-			done = peekWriter.bufferToChannel();
+			while ((peekWriter = resQueue.peek()) != null) {
+				done = peekWriter.bufferToChannel();
+
+				if (done) {
+					if (!peekWriter.isConnectionKeepALive()) {
+						close();
+					}
+					resQueue.poll();
+				} else {
+					break;
+				}
+			}
 
 			if (done) {
-				if (!peekWriter.isConnectionKeepALive()) {
-					close();
-				}
-				resQueue.poll();
-			} else {
-				break;
+				SelectionKey key = socketChannel.keyFor(outputSelector.getSelector());
+				key.cancel();
 			}
+			updateLastUsed();
+		} catch (Throwable e) {
+			exceptionHandler(e);
 		}
-
-		if (done) {
-			SelectionKey key = socketChannel.keyFor(outputSelector.getSelector());
-			key.cancel();
-			// outputSelector.selectNow();
-		}
-		updateLastUsed();
 	}
 
 	/**
@@ -185,7 +180,7 @@ public class HTTPProcessor implements IProcessor {
 			System.out.println("通道已被移除");
 		} catch (IOException e1) {
 			System.out.println("关闭通道出现异常！");
-//			e1.printStackTrace();
+			// e1.printStackTrace();
 		}
 	}
 
@@ -219,7 +214,7 @@ public class HTTPProcessor implements IProcessor {
 				// System.out.println("close!");
 				close();
 			} catch (IOException e) {
-//				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 	}
