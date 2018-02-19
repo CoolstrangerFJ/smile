@@ -30,7 +30,7 @@ public class InputSelector implements Runnable {
 		this.outputSelector = outputSelector;
 	}
 
-	private void handle() {
+	private void work() {
 		while (true) {
 			try {
 				selector.select();
@@ -64,7 +64,7 @@ public class InputSelector implements Runnable {
 	 */
 	@Override
 	public void run() {
-		handle();
+		work();
 	}
 
 }

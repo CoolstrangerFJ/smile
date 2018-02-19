@@ -32,7 +32,7 @@ public class OutputSelector implements Runnable {
 		this.writeSelector = writeSelector;
 	}
 
-	private void handle() {
+	private void work() {
 		int count = 0;
 		IProcessor wait4write = null;
 		while (true) {
@@ -85,7 +85,7 @@ public class OutputSelector implements Runnable {
 	 */
 	@Override
 	public void run() {
-		handle();
+		work();
 	}
 
 	public void addWriteTask(IProcessor processor) {
