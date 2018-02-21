@@ -75,7 +75,7 @@ public class Container {
 	public void handle(Request request, Response response) throws IOException {
 		String projName = request.getProjName();
 		// URI不正确,直接重定向 eg:/project --> /project/
-		System.out.println("project: " + projName);
+//		System.out.println("project: " + projName);
 		
 //		if (projName == null) {
 //			response.sendRedirect("/root/");
@@ -87,7 +87,7 @@ public class Container {
 			
 			String uri = request.getRequestURI();
 
-			System.out.println("uri: "+uri);
+//			System.out.println("uri: "+uri);
 			if (uri.equals("/")) {
 				response.sendRedirect("/root/");
 				return;

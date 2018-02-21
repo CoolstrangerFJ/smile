@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<!-- 基本配置信息 -->
-	<context port="80" version="1.0" charset="UTF-8" processor-thread-pool-size="3"/>
+	<context port="80" version="1.0" charset="UTF-8" processor-thread-pool-size="6"/>
 	
 	<!-- 缓存区扩容分级 (KB) -->
 	<buffer-size tiny="1" small="4" medium="64" big="256" large="1024" huge="4096" />

@@ -221,7 +221,7 @@ public class Request implements HttpServletRequest {
 	public String getProjName() {
 		if (ProjName == null) {
 			String uri = getRequestURI();
-			System.out.println("uri: "+uri);
+//			System.out.println("uri: "+uri);
 			
 			//判断是否为根目录
 			if (uri.length() == 1) {//url.equal("/")
@@ -229,7 +229,7 @@ public class Request implements HttpServletRequest {
 			}
 			
 			int secondSlash = uri.indexOf('/', 1);
-			System.out.println("secondSlash: "+ secondSlash);
+//			System.out.println("secondSlash: "+ secondSlash);
 			if (secondSlash != -1) {
 				ProjName = uri.substring(1, secondSlash);
 			}else {

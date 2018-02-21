@@ -5,7 +5,7 @@ import connecter.HttpConnecterNIO;
 public class Launcher {
 
 	public static void main(String[] args) {
-		HttpConnecterNIO server = new HttpConnecterNIO();
+		HttpConnecterNIO server = HttpConnecterNIO.getInstance();
 		try {
 			server.launch();
 		} catch (Throwable e) {

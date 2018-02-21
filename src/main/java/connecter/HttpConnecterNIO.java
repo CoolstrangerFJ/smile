@@ -10,7 +10,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 
-import connecter.selector.InputSelector;
+import connecter.selector.AcceptableSelector;
 import connecter.selector.OutputSelector;
 import container.Container;
 import launcher.Configuration;
@@ -22,9 +22,17 @@ import launcher.Configuration;
  *
  */
 public class HttpConnecterNIO {
-	private Selector readSelector;
+	private Selector acceptSelector;
 	private Selector writeSelector;
-	private static long startLoading;
+	private long startLoading;
+	private static HttpConnecterNIO instance = new HttpConnecterNIO();
+	
+	private HttpConnecterNIO(){
+	}
+	
+	public static HttpConnecterNIO getInstance(){
+		return instance;
+	}
 
 	public void launch() throws IOException {
 		startLoading = System.currentTimeMillis();
@@ -37,28 +45,20 @@ public class HttpConnecterNIO {
 		serverChannel2.configureBlocking(false);
 		serverChannel2.bind(new InetSocketAddress(InetAddress.getLocalHost(),Configuration.serverPort));
 		
-		readSelector = Selector.open();
+		acceptSelector = Selector.open();
 		writeSelector = Selector.open();
-		// try {
-		// Class.forName("container.dispatcher.ResquestDispatcherImpl");
-		// } catch (ClassNotFoundException e) {
-		// throw new RuntimeException(e);
-		// }
 		Container.init();
 
-		serverChannel1.register(readSelector, SelectionKey.OP_ACCEPT);
-		serverChannel2.register(readSelector, SelectionKey.OP_ACCEPT);
+		serverChannel1.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		serverChannel2.register(acceptSelector, SelectionKey.OP_ACCEPT);
 		
 		OutputSelector outputSelector = new OutputSelector(writeSelector);
 		// outputSelector.run();
 		new Thread(outputSelector).start();
-		new Thread(new InputSelector(readSelector, outputSelector)).start();
+		new Thread(new AcceptableSelector(acceptSelector, outputSelector)).start();
 	}
 
-	/**
-	 * @return
-	 */
 	public static long getStartLoading() {
-		return startLoading;
+		return instance.startLoading;
 	}
 }

@@ -32,7 +32,8 @@ import util.Background;
  */
 public class HTTPProcessor implements IProcessor {
 
-	private static ExecutorService pool = Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
+	private static ExecutorService pool;
+//	private static ExecutorService pool = Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
 	private static ScheduledThreadPoolExecutor cleaner = Background.getInstance().getPool();
 	private static final int SECOND = 1000;
 	private static long delay = Configuration.processorTimeOut * SECOND;
@@ -106,7 +107,7 @@ public class HTTPProcessor implements IProcessor {
 			reqQueue.poll();
 			response.ready4Write();
 			resQueue.add(response);
-			outputSelector.addWriteTask(this);
+			outputSelector.addRegisterTask(this);
 			updateLastUsed();
 		}
 	}
@@ -150,6 +151,8 @@ public class HTTPProcessor implements IProcessor {
 	 */
 	@Override
 	public void run() {
+//		int activeCount = Thread.activeCount();
+//		System.out.println("activeCount: "+activeCount);
 		if (isProcessing.compareAndSet(false, true)) {
 			try {
 				process();
