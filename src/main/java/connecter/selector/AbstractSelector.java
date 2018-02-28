@@ -45,7 +45,7 @@ public abstract class AbstractSelector implements Runnable {
 				}
 			} catch (IOException e) {
 			} catch (Throwable e) {
-				// e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 	}
@@ -72,9 +72,9 @@ public abstract class AbstractSelector implements Runnable {
 
 		if (selectCount > 0) {
 			return true;
-		}else {
+		} else {
 			if (registerCount == 0) {
-				//休息1ms
+				// 休息1ms
 				Thread.sleep(1);
 			}
 			return false;

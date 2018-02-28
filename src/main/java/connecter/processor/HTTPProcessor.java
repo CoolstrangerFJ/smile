@@ -1,17 +1,11 @@
-/**
- * 
- */
 package connecter.processor;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import connecter.parser.IRequestParser;
 import connecter.request.Request;
@@ -23,6 +17,8 @@ import factory.ParserFactory;
 import factory.ResponseFactory;
 import launcher.Configuration;
 import util.Background;
+import util.HashThreadPoolExecutor;
+import util.Worker;
 
 /**
  * @author CoolStranger
@@ -32,8 +28,9 @@ import util.Background;
  */
 public class HTTPProcessor implements IProcessor {
 
-	private static ExecutorService pool;
-//	private static ExecutorService pool = Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
+	// private static ExecutorService pool;
+	private static HashThreadPoolExecutor pool;
+	private Worker worker;
 	private static ScheduledThreadPoolExecutor cleaner = Background.getInstance().getPool();
 	private static final int SECOND = 1000;
 	private static long delay = Configuration.processorTimeOut * SECOND;
@@ -45,14 +42,15 @@ public class HTTPProcessor implements IProcessor {
 	private IRequestParser parser;
 	private CleanTask cleanTask;
 	private long lastUsed;
-	private AtomicBoolean isProcessing = new AtomicBoolean();
 	private int invalidCount;
 
 	static {
 		if (Configuration.processorThreadPoolSize > 0) {
-			pool = Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
+			pool = new HashThreadPoolExecutor(Configuration.processorThreadPoolSize);
+			// pool =
+			// Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
 		} else {
-			pool = Executors.newCachedThreadPool();
+			throw new RuntimeException();
 		}
 	}
 
@@ -73,6 +71,7 @@ public class HTTPProcessor implements IProcessor {
 			if (parser.read()) {
 				reset();
 
+				boolean hasReq = false;
 				Request request = null;
 				while (true) {
 					request = parser.getRequest();
@@ -80,9 +79,17 @@ public class HTTPProcessor implements IProcessor {
 					if (request == null) {
 						break;
 					}
-					// System.out.println("submit!");
+					hasReq = true;
+
 					reqQueue.add(request);
-					pool.submit(this);
+				}
+				
+				if (hasReq) {
+					if (worker == null) {
+						worker = pool.submit(this);
+					}else {
+						worker.submit(this);
+					}
 				}
 			} else {
 				invalidIncrease();
@@ -146,30 +153,36 @@ public class HTTPProcessor implements IProcessor {
 		}
 	}
 
-	/**
-	 * @see java.lang.Runnable#run()
-	 */
+	// @Override
+	// public void run() {
+	// // int activeCount = Thread.activeCount();
+	// // System.out.println("activeCount: "+activeCount);
+	// if (isProcessing.compareAndSet(false, true)) {
+	// try {
+	// process();
+	// /*
+	// * 有可能执行到这个地方的时候，又有新的请求加入到队列并提交了任务，然而调用run方法的时候(isProcessing==
+	// * true)没有获得执行权，直接跳过，所以需要在finally中检查队列是否为空,若不为空再提交一次任务
+	// */
+	// } catch (Throwable e) {
+	// exceptionHandler(e);
+	// } finally {
+	// isProcessing.set(false);
+	// // 检查队列是否为空,若不为空再提交一次任务
+	// if (reqQueue.peek() != null) {
+	// pool.submit(this);
+	// System.out.println("再次提交任务");
+	// }
+	// }
+	// }
+	// }
+
 	@Override
 	public void run() {
-//		int activeCount = Thread.activeCount();
-//		System.out.println("activeCount: "+activeCount);
-		if (isProcessing.compareAndSet(false, true)) {
-			try {
-				process();
-				/*
-				 * 有可能执行到这个地方的时候，又有新的请求加入到队列并提交了任务，然而调用run方法的时候(isProcessing==
-				 * true)没有获得执行权，直接跳过，所以需要在finally中检查队列是否为空,若不为空再提交一次任务
-				 */
-			} catch (Throwable e) {
-				exceptionHandler(e);
-			} finally {
-				isProcessing.set(false);
-				// 检查队列是否为空,若不为空再提交一次任务
-				if (reqQueue.peek() != null) {
-					pool.submit(this);
-					System.out.println("再次提交任务");
-				}
-			}
+		try {
+			process();
+		} catch (Throwable e) {
+			exceptionHandler(e);
 		}
 	}
 

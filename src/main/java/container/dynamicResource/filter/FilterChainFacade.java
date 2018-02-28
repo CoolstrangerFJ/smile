@@ -67,12 +67,11 @@ public class FilterChainFacade implements FilterChain {
 
 	private Filter getNextFilter(String url) {
 		while (statusIndex < length) {
-			ResourceInfo<Filter> filterInfo = filters.get(statusIndex);
+			ResourceInfo<Filter> filterInfo = filters.get(statusIndex++);
 			List<Mapping<Filter>> mappings = filterInfo.getMappings();
 
 			for (Mapping<Filter> mapping : mappings) {
 				if (mapping.match(url)) {
-					statusIndex++;
 					return chain.getFilter(mapping.getName());
 				}
 			}

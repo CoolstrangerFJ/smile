@@ -135,7 +135,8 @@ public class CacheManager {
 			// 在转发传入response对象可能是包装类,无法强转为responseWriter后,
 			// 直接把缓存块传入response对象,此时直接缓存不能调用array！！！
 
-			ByteBuffer buffer = ByteBuffer.allocate((int) size);
+			ByteBuffer buffer = ByteBuffer.allocateDirect((int) size);
+//			ByteBuffer buffer = ByteBuffer.allocate((int) size);
 			while (buffer.hasRemaining()) {
 				channel.read(buffer);
 			}

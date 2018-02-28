@@ -45,12 +45,22 @@ public class HttpConnecterNIO {
 		serverChannel2.configureBlocking(false);
 		serverChannel2.bind(new InetSocketAddress(InetAddress.getLocalHost(),Configuration.serverPort));
 		
+		ServerSocketChannel serverChannel3 = ServerSocketChannel.open();
+		serverChannel3.configureBlocking(false);
+		serverChannel3.bind(new InetSocketAddress("127.0.0.1", 9081));
+		
+		ServerSocketChannel serverChannel4 = ServerSocketChannel.open();
+		serverChannel4.configureBlocking(false);
+		serverChannel4.bind(new InetSocketAddress(InetAddress.getLocalHost(),9081));
+		
 		acceptSelector = Selector.open();
 		writeSelector = Selector.open();
 		Container.init();
 
 		serverChannel1.register(acceptSelector, SelectionKey.OP_ACCEPT);
 		serverChannel2.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		serverChannel3.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		serverChannel4.register(acceptSelector, SelectionKey.OP_ACCEPT);
 		
 		OutputSelector outputSelector = new OutputSelector(writeSelector);
 		// outputSelector.run();

@@ -23,10 +23,11 @@ public class AcceptableSelector extends AbstractSelector {
 	@Override
 	protected void handle(SelectionKey key) throws IOException {
 		if (key.isAcceptable()) {
+
 			ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 			SocketChannel socketChannel = serverSocketChannel.accept();
 			socketChannel.configureBlocking(false);
-
+			
 			IProcessor processor = ProcessorFactory.createProcessor(socketChannel, outputSelector);
 			InputSelector inputSelector = loadBalancer.getInputSelector();
 			inputSelector.addRegisterTask(processor);
