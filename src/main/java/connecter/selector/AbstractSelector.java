@@ -44,6 +44,7 @@ public abstract class AbstractSelector implements Runnable {
 					}
 				}
 			} catch (IOException e) {
+				//忽略IOException
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
