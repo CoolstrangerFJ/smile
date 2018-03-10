@@ -6,11 +6,8 @@ package container;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import connecter.HttpConnecterNIO;
 import connecter.request.Request;
 import connecter.response.Response;
 import container.dynamicResource.DynamicResourceManager;
@@ -59,17 +56,6 @@ public class Container {
 				System.err.println(projectName + " 加载失败...");
 			}
 		}
-		System.out.println();
-		System.out.println("----------欢迎使用" + Configuration.SERVER_NAME + "---------");
-		System.out.println("版本: " + Configuration.version);
-		try {
-			System.out.println("服务器IP:  " + InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e) {
-			throw new RuntimeException(e);
-		}
-		long finishLoading = System.currentTimeMillis();
-		long startupTime = finishLoading - HttpConnecterNIO.getStartLoading();
-		System.out.println("本次启动耗时 " + startupTime + "ms  作者：Coolstranger");
 	}
 
 	public void handle(Request request, Response response) throws IOException {

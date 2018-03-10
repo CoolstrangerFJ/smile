@@ -6,6 +6,7 @@ package connecter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -24,7 +25,6 @@ import launcher.Configuration;
 public class HttpConnecterNIO {
 	private Selector acceptSelector;
 	private Selector writeSelector;
-	private long startLoading;
 	private static HttpConnecterNIO instance = new HttpConnecterNIO();
 	
 	private HttpConnecterNIO(){
@@ -35,7 +35,7 @@ public class HttpConnecterNIO {
 	}
 
 	public void launch() throws IOException {
-		startLoading = System.currentTimeMillis();
+		long startLoading = System.currentTimeMillis();
 		
 		ServerSocketChannel serverChannel1 = ServerSocketChannel.open();
 		serverChannel1.configureBlocking(false);
@@ -66,9 +66,21 @@ public class HttpConnecterNIO {
 		// outputSelector.run();
 		new Thread(outputSelector).start();
 		new Thread(new AcceptableSelector(acceptSelector, outputSelector)).start();
+		
+		long startupTime = System.currentTimeMillis() - startLoading;
+		success(startupTime);
 	}
 
-	public static long getStartLoading() {
-		return instance.startLoading;
+	private void success(long startupTime){
+		System.out.println();
+		System.out.println("----------欢迎使用" + Configuration.SERVER_NAME + "---------");
+		System.out.println("版本: " + Configuration.version);
+		try {
+			System.out.println("服务器IP:  " + InetAddress.getLocalHost().getHostAddress());
+		} catch (UnknownHostException e) {
+			throw new RuntimeException(e);
+		}
+		System.out.println("本次启动耗时 " + startupTime + "ms  作者：Coolstranger");
 	}
+	
 }
