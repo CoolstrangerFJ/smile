@@ -1,12 +1,11 @@
 /**
  * 
  */
-package factory;
+package connecter.response;
 
 import java.nio.channels.SocketChannel;
 
 import connecter.request.Request;
-import connecter.response.Response;
 
 /**
  * @author CoolStranger

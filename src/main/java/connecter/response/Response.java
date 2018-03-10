@@ -24,9 +24,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import connecter.buffer.BufferFactory;
 import connecter.buffer.IBuffer;
 import connecter.request.Request;
-import factory.BufferFactory;
 import launcher.Configuration;
 
 /**

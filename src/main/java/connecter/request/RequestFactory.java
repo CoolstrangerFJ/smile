@@ -1,13 +1,12 @@
 /**
  * 
  */
-package factory;
+package connecter.request;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
 import connecter.buffer.IBuffer;
-import connecter.request.Request;
 
 /**
  * @author CoolStranger

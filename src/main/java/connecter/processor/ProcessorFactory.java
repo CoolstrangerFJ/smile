@@ -1,12 +1,10 @@
 /**
  * 
  */
-package factory;
+package connecter.processor;
 
 import java.nio.channels.SocketChannel;
 
-import connecter.processor.HTTPProcessor;
-import connecter.processor.IProcessor;
 import connecter.selector.OutputSelector;
 
 /**

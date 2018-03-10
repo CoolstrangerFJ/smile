@@ -1,12 +1,9 @@
 /**
  * 
  */
-package factory;
+package connecter.parser;
 
 import java.nio.channels.SocketChannel;
-
-import connecter.parser.HTTPRequestParser;
-import connecter.parser.IRequestParser;
 
 /**
  * @author CoolStranger

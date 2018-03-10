@@ -8,10 +8,10 @@ import java.net.URLDecoder;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
+import connecter.buffer.BufferFactory;
 import connecter.buffer.IBuffer;
 import connecter.request.Request;
-import factory.BufferFactory;
-import factory.RequestFactory;
+import connecter.request.RequestFactory;
 import launcher.Configuration;
 
 /**

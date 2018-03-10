@@ -7,7 +7,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 import connecter.processor.IProcessor;
-import factory.ProcessorFactory;
+import connecter.processor.ProcessorFactory;
 
 public class AcceptableSelector extends AbstractSelector {
 

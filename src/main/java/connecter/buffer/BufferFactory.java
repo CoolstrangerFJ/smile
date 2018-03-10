@@ -1,13 +1,10 @@
 /**
  * 
  */
-package factory;
+package connecter.buffer;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-
-import connecter.buffer.IBuffer;
-import connecter.buffer.IOBuffer;
 
 /**
  * @author CoolStranger
