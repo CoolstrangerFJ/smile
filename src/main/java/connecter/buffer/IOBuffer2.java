@@ -8,9 +8,10 @@ import java.nio.channels.SocketChannel;
 import launcher.Configuration;
 
 /**
- * 此类是一个自适应大小的缓存类,底层为字节数组,一般用于NIO服务器缓存不大于4MB的请求和响应,可以通过构造方法指定缓存等级设置缓存大小，默认值为4KB
+ * 此类是一个自适应大小的缓存类,底层为字节数组,一般用于NIO服务器缓存请求和响应,
+ * 通过构造方法指定缓存等级设置缓存大小,可在server.xml中配置缓存大小
  */
-public class IOBuffer implements IBuffer {
+public class IOBuffer2 implements IBuffer {
 
 	private static final int TINYSIZE = Configuration.tinySize;
 	private static final int SMALLSIZE = Configuration.smallSize;
@@ -29,17 +30,17 @@ public class IOBuffer implements IBuffer {
 	private int readPos;
 	private SocketChannel socketChannel;
 
-	public IOBuffer(SocketChannel socketChannel) {
+	public IOBuffer2(SocketChannel socketChannel) {
 		this(socketChannel, 1);
 	}
 
-	public IOBuffer(SocketChannel socketChannel, int sizeLevel) {
+	public IOBuffer2(SocketChannel socketChannel, int sizeLevel) {
 		this.socketChannel = socketChannel;
 		this.sizeLevel = sizeLevel;
 		init();
 	}
 
-	public IOBuffer(SocketChannel socketChannel, ByteBuffer byteBuffer) {
+	public IOBuffer2(SocketChannel socketChannel, ByteBuffer byteBuffer) {
 		this.socketChannel = socketChannel;
 		this.buf = byteBuffer;
 		this.writePos = byteBuffer.capacity();
@@ -115,7 +116,7 @@ public class IOBuffer implements IBuffer {
 	/**
 	 * 把字节数组存入缓存块,自动扩容
 	 * 
-	 * @see connecter.buffer.IOBuffer#put(byte[])
+	 * @see connecter.buffer.IOBuffer2#put(byte[])
 	 * @param src
 	 */
 	@Override
@@ -126,7 +127,7 @@ public class IOBuffer implements IBuffer {
 	/**
 	 * 把字节数组中指定数据存入缓存块,自动扩容
 	 * 
-	 * @see connecter.buffer.IOBuffer#put(byte[], int, int)
+	 * @see connecter.buffer.IOBuffer2#put(byte[], int, int)
 	 * @param src
 	 * @param offset
 	 * @param length
@@ -158,15 +159,15 @@ public class IOBuffer implements IBuffer {
 		}
 	}
 
-	/**
-	 * 把数据往前移动
-	 */
-	private void compact() {
-		buf.position(readPos);
-		buf.compact();
-		writePos = buf.position();
-		readPos = 0;
-	}
+//	/**
+//	 * 把数据往前移动
+//	 */
+//	private void compact() {
+//		buf.position(readPos);
+//		buf.compact();
+//		writePos = buf.position();
+//		readPos = 0;
+//	}
 
 	/**
 	 * 创建新的缓存块, 若有粘包, 把粘包的内容转移到新的缓存块, 并返回新的缓存块
@@ -174,11 +175,11 @@ public class IOBuffer implements IBuffer {
 	 * @param contentLength
 	 * @return 新缓存块
 	 */
-	public IBuffer getAdhering(int contentLength) {
+	public IOBuffer2 getAdhering(int contentLength) {
 		int adhering = remaining() - contentLength;
 		// 若无粘包,直接创建新的缓存块
 		if (adhering == 0) {
-			return new IOBuffer(socketChannel);
+			return new IOBuffer2(socketChannel);
 		}
 		int sizeLevel = matchSize(adhering);
 		// 粘包部分一般会很小,避免开辟只有1KB的缓存导致频繁扩容
@@ -190,7 +191,7 @@ public class IOBuffer implements IBuffer {
 		System.arraycopy(arrBuf, readPos + contentLength, buf, 0, adhering);
 		ByteBuffer wrap = ByteBuffer.wrap(buf);
 		wrap.position(adhering);
-		IOBuffer adherentBuf = new IOBuffer(this.socketChannel, wrap);
+		IOBuffer2 adherentBuf = new IOBuffer2(this.socketChannel, wrap);
 		adherentBuf.setArrBuf(buf);
 		adherentBuf.setSizeLevel(sizeLevel);
 		adherentBuf.writePos = adhering;
@@ -209,7 +210,7 @@ public class IOBuffer implements IBuffer {
 	/**
 	 * 从通道中读取
 	 * 
-	 * @see connecter.buffer.IOBuffer#readFromChannel()
+	 * @see connecter.buffer.IOBuffer2#readFromChannel()
 	 * @return 是否成功读入
 	 */
 	@Override
@@ -250,7 +251,7 @@ public class IOBuffer implements IBuffer {
 
 	/**
 	 *
-	 * @see connecter.buffer.IOBuffer#ready4WriteToChannel()
+	 * @see connecter.buffer.IOBuffer2#ready4WriteToChannel()
 	 */
 	@Override
 	public void ready4WriteToChannel() {
@@ -262,7 +263,7 @@ public class IOBuffer implements IBuffer {
 	/**
 	 * 把数据写入通道
 	 * 
-	 * @see connecter.buffer.IOBuffer#writeToChannel()
+	 * @see connecter.buffer.IOBuffer2#writeToChannel()
 	 * @return 是否全部写入
 	 */
 	@Override
@@ -311,12 +312,11 @@ public class IOBuffer implements IBuffer {
 	private void expand() {
 		int capacity = SIZE[sizeLevel];
 		byte[] newArrBuf = new byte[capacity];
-		int length = writePos - readPos;
-		System.arraycopy(arrBuf, readPos, newArrBuf, 0, length);
+		int length = writePos - 1;
+		System.arraycopy(arrBuf, 0, newArrBuf, 0, length);
 		arrBuf = newArrBuf;
 		buf = ByteBuffer.wrap(arrBuf);
 		buf.position(length);
-		readPos = 0;
 	}
 
 	/**
@@ -343,13 +343,9 @@ public class IOBuffer implements IBuffer {
 	 */
 	@Override
 	public void prepare(int size) {
-		if (size > SIZE[sizeLevel]) {
-			expand(size);
-		} else {
-			// (SIZE[sizeLevel] - readPos)
-			if ((SIZE[sizeLevel] - readPos) < size) {
-				compact();
-			}
+		int totalSize = size + buf.position();
+		if (totalSize > SIZE[sizeLevel]) {
+			expand(totalSize);
 		}
 	}
 

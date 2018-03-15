@@ -26,5 +26,5 @@ public interface IBuffer {
 
 	void prepare(int size);
 	
-	IOBuffer getAdhering(int contentLength);
+	IBuffer getAdhering(int contentLength);
 }
