@@ -6,6 +6,8 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 import connecter.parser.IRequestParser;
 import connecter.parser.ParserFactory;
@@ -21,13 +23,13 @@ import util.HashThreadPoolExecutor;
 import util.Worker;
 
 /**
+ * 这类用于多个线程组之间通信,保存工作状态
  * @author CoolStranger
- * @date 2017年12月26日
- * @time 下午11:55:10
- *
  */
 public class HTTPProcessor implements IProcessor {
 
+	private static AtomicInteger concurrency = new AtomicInteger();
+	private static LongAdder qps = new LongAdder();
 	// private static ExecutorService pool;
 	private static HashThreadPoolExecutor pool;
 	private Worker worker;
@@ -60,6 +62,7 @@ public class HTTPProcessor implements IProcessor {
 		this.outputSelector = outputSelector;
 		this.cleanTask = new CleanTask(this);
 		updateLastUsed();
+		concurrency.incrementAndGet();
 	}
 
 	/**
@@ -138,6 +141,7 @@ public class HTTPProcessor implements IProcessor {
 						close();
 					}
 					resQueue.poll();
+					qps.increment();
 				} else {
 					break;
 				}
@@ -237,5 +241,19 @@ public class HTTPProcessor implements IProcessor {
 
 	public void reset() {
 		invalidCount = 0;
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		concurrency.decrementAndGet();
+	}
+	
+	public static int getConcurrency(){
+		return concurrency.get();
+	}
+	
+	public static long getQPSAndReset(){
+		return qps.sumThenReset();
 	}
 }

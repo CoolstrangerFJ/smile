@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 import connecter.selector.AcceptableSelector;
 import connecter.selector.OutputSelector;
@@ -23,9 +25,9 @@ import launcher.Configuration;
  *
  */
 public class HttpConnecterNIO {
-	private Selector acceptSelector;
-	private Selector writeSelector;
 	private static HttpConnecterNIO instance = new HttpConnecterNIO();
+	private long startupTime;
+	private List<InetSocketAddress> inetSocketAddresses = new ArrayList<>();
 	
 	private HttpConnecterNIO(){
 	}
@@ -34,41 +36,32 @@ public class HttpConnecterNIO {
 		return instance;
 	}
 
+	public void addSocketAddress(InetSocketAddress socketAddress){
+		inetSocketAddresses.add(socketAddress);
+	}
 	public void launch() throws IOException {
 		long startLoading = System.currentTimeMillis();
 		
-		ServerSocketChannel serverChannel1 = ServerSocketChannel.open();
-		serverChannel1.configureBlocking(false);
-		serverChannel1.bind(new InetSocketAddress("127.0.0.1", Configuration.serverPort));
-		
-		ServerSocketChannel serverChannel2 = ServerSocketChannel.open();
-		serverChannel2.configureBlocking(false);
-		serverChannel2.bind(new InetSocketAddress(InetAddress.getLocalHost(),Configuration.serverPort));
-		
-		ServerSocketChannel serverChannel3 = ServerSocketChannel.open();
-		serverChannel3.configureBlocking(false);
-		serverChannel3.bind(new InetSocketAddress("127.0.0.1", 9081));
-		
-		ServerSocketChannel serverChannel4 = ServerSocketChannel.open();
-		serverChannel4.configureBlocking(false);
-		serverChannel4.bind(new InetSocketAddress(InetAddress.getLocalHost(),9081));
-		
-		acceptSelector = Selector.open();
-		writeSelector = Selector.open();
 		Container.init();
-
-		serverChannel1.register(acceptSelector, SelectionKey.OP_ACCEPT);
-		serverChannel2.register(acceptSelector, SelectionKey.OP_ACCEPT);
-		serverChannel3.register(acceptSelector, SelectionKey.OP_ACCEPT);
-		serverChannel4.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		ServerMoniter.getInstance().listen();
+		Selector acceptSelector = Selector.open();
+		Selector writeSelector = Selector.open();
+		
+		for (InetSocketAddress inetSocketAddress : inetSocketAddresses) {
+			ServerSocketChannel serverChannel = ServerSocketChannel.open();
+			serverChannel.configureBlocking(false);
+			serverChannel.bind(inetSocketAddress);
+			serverChannel.register(acceptSelector, SelectionKey.OP_ACCEPT);
+		}
 		
 		OutputSelector outputSelector = new OutputSelector(writeSelector);
 		// outputSelector.run();
 		new Thread(outputSelector).start();
 		new Thread(new AcceptableSelector(acceptSelector, outputSelector)).start();
 		
-		long startupTime = System.currentTimeMillis() - startLoading;
-		success(startupTime);
+		this.startupTime = System.currentTimeMillis();
+		long loadingTime = startupTime - startLoading;
+		success(loadingTime);
 	}
 
 	private void success(long startupTime){
@@ -83,4 +76,7 @@ public class HttpConnecterNIO {
 		System.out.println("本次启动耗时 " + startupTime + "ms  作者：Coolstranger");
 	}
 	
+	public long getStartupTime(){
+		return startupTime;
+	}
 }

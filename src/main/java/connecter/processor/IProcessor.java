@@ -36,4 +36,6 @@ public interface IProcessor extends Runnable {
 	void invalidIncrease();
 
 	void reset();
+	
+	
 }

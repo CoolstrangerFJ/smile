@@ -29,14 +29,17 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import connecter.ServerMoniter;
 import connecter.buffer.IBuffer;
 import container.Container;
 import container.dynamicResource.DynamicResourceManager;
 import container.session.Session;
 import container.session.SessionManager;
 import launcher.Configuration;
+import manage.Managable;
+import manage.Moniter;
 
-public class Request implements HttpServletRequest {
+public class Request implements HttpServletRequest, Managable {
 
 	private static final String DEFAULT_PAGE = Configuration.DEFAULT_PAGE;
 	private static final String DATE_PATTERN = Configuration.DATE_PATTERN;
@@ -925,5 +928,9 @@ public class Request implements HttpServletRequest {
 			System.out.println("getDynamicResourceManager.getProjName: "+getProjName());
 		}
 		return dynamicResourceManager;
+	}
+	
+	public Moniter getMoniter(){
+		return ServerMoniter.getInstance();
 	}
 }

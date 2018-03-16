@@ -7,14 +7,17 @@ public class Background {
 	private ScheduledThreadPoolExecutor pool = new ScheduledThreadPoolExecutor(1);
 
 	private Background() {
-
+		startListen();
 	}
 
-	public static Background getInstance(){
+	public static Background getInstance() {
 		return instance;
 	}
-	
-	public ScheduledThreadPoolExecutor getPool(){
+
+	public ScheduledThreadPoolExecutor getPool() {
 		return pool;
+	}
+
+	private void startListen() {
 	}
 }
