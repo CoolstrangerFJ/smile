@@ -1,0 +1,80 @@
+<html>
+<head>
+<link rel="shortcut icon" href="img/smile.jpg">
+<link rel="icon" href="img/smile.jpg">
+<title>Smile</title>
+<style type="text/css">
+.listener{
+	margin-top:25%;
+	transition-duration: 0.5s;
+	float:right;
+	background-color:black;
+	width:200px;
+	height:145px;
+	border-radius: 8px;
+}
+.listener:hover{
+	background-color:red;
+}
+.situation{
+	margin-left:20px;
+	font-size:13px;
+	line-height:19px;
+	font-family:"微软雅黑";
+	color:white;
+}
+.situation:hover{
+	font-size:15px;
+	line-height:15px;
+	color:yellow;
+}
+a:hover{
+	color:red;
+}
+body {
+	background-color: burlywood
+}
+ul{
+	list-style-type:none;
+}
+</style>
+<script src="js/jquery-1.11.0.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+	<h1 align="center">欢迎使用Smile</h1>
+	<div class="listener">
+		<p class="situation">当前每秒请求数: <span id="qps">0</span></p>
+		<p class="situation">当前并发数: <span id="concurrency">0</span></p>
+		<p class="situation">已处理请求: <span id="totalCount">0</span>次</p>
+		<p class="situation">服务器已运行: <span id="runtime">0</span>秒</p>
+	</div>
+	<script type="text/javascript">
+	$(function(){
+		setInterval("getMsg()",500);
+	});
+	
+	function getMsg(){
+		$.get("/manage/MoniterServlet",function(data){
+	 		$("#qps").html(data.qps);
+	 		$("#concurrency").html(data.concurrency);
+	 		$("#totalCount").html(data.totalCount);
+	 		$("#runtime").html(data.runtime);
+	 	},"json");
+	};
+	
+	</script>
+	<div>
+		<img style="float:left;" src="img/smile.jpg" width="160px" />
+	</div>
+	<div style="float:left;">
+		<h2 align="center">目前已部署三个应用</h2>
+		<ul>
+			<li><a href="monitor.html">可视化监视器</a></li>
+			<li><a href="/visiblesort/index.html">可视化排序</a></li>
+			<li><a href="/huaji/index.html">锤滑稽</a></li>
+			<li><a href="/bigFile/vedio.html">大文件测试</a></li>
+		</ul>
+	</div>
+	
+</body>
+</html>
