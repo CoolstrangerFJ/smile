@@ -1,6 +1,7 @@
 package connecter.processor;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -138,7 +139,7 @@ public class HTTPProcessor implements IProcessor {
 
 				if (done) {
 					if (!peekWriter.isConnectionKeepALive()) {
-						close();
+						close(true);
 					}
 					resQueue.poll();
 					qps.increment();
@@ -195,8 +196,7 @@ public class HTTPProcessor implements IProcessor {
 	 */
 	private void exceptionHandler(Throwable e) {
 		try {
-			e.printStackTrace();
-			close();
+			close(!(e instanceof ClosedChannelException));
 			System.out.println("通道已被移除");
 		} catch (IOException e1) {
 			System.out.println("关闭通道出现异常！");
@@ -221,8 +221,11 @@ public class HTTPProcessor implements IProcessor {
 	 * @throws IOException
 	 *
 	 */
-	public void close() throws IOException {
+	public void close(boolean isDec) throws IOException {
 		socketChannel.close();
+		if (isDec) {
+			concurrency.decrementAndGet();
+		}
 		// outputSelector.selectNow();
 	}
 
@@ -232,7 +235,7 @@ public class HTTPProcessor implements IProcessor {
 		if (invalidCount > 3 && reqQueue.isEmpty() && resQueue.isEmpty()) {
 			try {
 				// System.out.println("close!");
-				close();
+				close(true);
 			} catch (IOException e) {
 				// e.printStackTrace();
 			}
@@ -241,12 +244,6 @@ public class HTTPProcessor implements IProcessor {
 
 	public void reset() {
 		invalidCount = 0;
-	}
-	
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		concurrency.decrementAndGet();
 	}
 	
 	public static int getConcurrency(){

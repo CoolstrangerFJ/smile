@@ -1,0 +1,143 @@
+<html>
+<head>
+<link rel="shortcut icon" href="img/smile.jpg">
+<link rel="icon" href="img/smile.jpg">
+<title>Smile</title>
+<style type="text/css">
+.listener{
+	margin-top:25%;
+	transition-duration: 0.5s;
+	float:right;
+	background-color:black;
+	width:200px;
+	height:145px;
+	border-radius: 8px;
+}
+.listener:hover{
+	background-color:red;
+}
+.situation{
+	margin-left:20px;
+	font-size:13px;
+	line-height:19px;
+	font-family:"微软雅黑";
+	color:white;
+}
+.situation:hover{
+	font-size:15px;
+	line-height:15px;
+	color:yellow;
+}
+a:hover{
+	color:red;
+}
+body {
+	background-color: burlywood
+}
+ul{
+	list-style-type:none;
+}
+</style>
+<script src="js/echarts.min.js"></script>
+<script src="js/jquery-1.11.0.min.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+	<h1 align="center">欢迎使用Smile</h1>
+	<div class="listener">
+		<p class="situation">当前每秒请求数: <span id="qps">0</span></p>
+		<p class="situation">当前并发数: <span id="concurrency">0</span></p>
+		<p class="situation">已处理请求: <span id="totalCount">0</span>次</p>
+		<!-- <p class="situation">已出现异常: <span id="expCount">0</span>次</p> -->
+		<p class="situation">服务器已运行: <span id="runtime">0</span>秒</p>
+	</div>
+	<script type="text/javascript">
+	$(function(){
+		setInterval("getMsg()",500);
+	});
+	
+	function getMsg(){
+		$.get("/manage/MoniterServlet",function(data){
+	 		$("#qps").html(data.qps);
+	 		$("#concurrency").html(data.concurrency);
+	 		$("#totalCount").html(data.totalCount);
+	 		$("#runtime").html(data.runtime);
+	 	},"json");
+	};
+	
+	</script>
+	
+	<div id="monitor" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('monitor'));
+        var runtime = [];
+		var qps = [];
+		var concurrency = [];
+		for (var i = 0; i < 60; i++) {
+			runtime.push(0);
+			qps.push(0);
+			concurrency.push(0);
+		}
+		function addData(){
+			runtime.push($("#runtime").html()+"s ");
+			qps.push($("#qps").html());
+			concurrency.push($("#concurrency").html());
+			
+			runtime.shift();
+			qps.shift();
+			concurrency.shift();
+		}
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: 'Smile Monitor'
+            },
+            tooltip: {},
+            legend: {
+                data:['QPS','Concurrency']
+            },
+            xAxis: {
+    	        name: 'runtime',
+                data: runtime
+            },
+            yAxis: {
+            	boundaryGap: [0, '10%'],
+            	minInterval: 1,
+            	type:'value'
+            },
+            
+            series: [{
+                name: 'QPS',
+                type: 'line',
+                smooth:false,
+                areaStyle: {
+                	normal: {}
+                },
+                data: qps
+            },{
+            	name:'Concurrency',
+            	type:'line',
+            	smooth:true,
+            	data: concurrency
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+        setInterval(function () {
+        	addData();
+            myChart.setOption({
+            	xAxis: {
+                    data: runtime
+                },
+            	series: [{
+                    data: qps
+                },{
+                    data: concurrency
+                }]
+            });
+        }, 1000);
+    </script>
+	
+</body>
+</html>

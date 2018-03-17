@@ -16,7 +16,7 @@ public class BioClient {
 		for (int i = 0; i < 5000; i++) {
 			try {
 				// s = new Socket("192.168.92.28", 80);
-				s = new Socket("192.168.92.28", 9082);
+				s = new Socket("127.0.0.1", 80);
 
 				System.out.println("连接成功" + i);
 

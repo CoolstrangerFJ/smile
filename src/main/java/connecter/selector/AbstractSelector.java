@@ -37,6 +37,13 @@ public abstract class AbstractSelector implements Runnable {
 					try {
 						SelectionKey key = iterator.next();
 						handle(key);
+					} catch (RuntimeException e) {
+						Throwable cause = e.getCause();
+						if (!(cause instanceof IOException)) {
+							cause.printStackTrace();
+						}
+					} catch (IOException e) {
+						//XXX：暂时忽略IOException,因为多为客户端非正常情况断开连接
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
@@ -44,7 +51,7 @@ public abstract class AbstractSelector implements Runnable {
 					}
 				}
 			} catch (IOException e) {
-				//忽略IOException
+				//XXX：暂时忽略IOException,因为多为客户端非正常情况断开连接
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}

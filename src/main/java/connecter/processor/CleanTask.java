@@ -35,7 +35,8 @@ public class CleanTask implements Runnable {
 			long lastUsed = processor.getLastUsed();
 			if ((curTime - lastUsed) >= processorTimeOut) {
 				try {
-					processor.close();
+					boolean connected = processor.getSocketChannel().isConnected();
+					processor.close(connected);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
