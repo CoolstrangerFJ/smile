@@ -2,3 +2,8 @@
 .settings
 .classpath
 bin
+target
+classes
+test-classes
+build
+/manage/build
