@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ConcurrentHashMap;
 
-import connecter.request.Request;
-import connecter.response.Response;
+import connector.request.Request;
+import connector.response.Response;
 import container.dynamicResource.DynamicResourceManager;
 import container.staticResource.StaticResourceManager;
 import launcher.Configuration;

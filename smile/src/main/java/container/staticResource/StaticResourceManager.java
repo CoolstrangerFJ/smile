@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import connecter.response.ResponseWriter;
+import connector.response.ResponseWriter;
 import launcher.Configuration;
 import util.XmlLoader;
 

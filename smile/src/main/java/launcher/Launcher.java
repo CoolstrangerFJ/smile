@@ -3,12 +3,12 @@ package launcher;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-import connecter.HttpConnecterNIO;
+import connector.HttpConnectorNIO;
 
 public class Launcher {
 
 	public static void main(String[] args) {
-		HttpConnecterNIO server = HttpConnecterNIO.getInstance();
+		HttpConnectorNIO server = HttpConnectorNIO.getInstance();
 		try {
 			server.addSocketAddress(new InetSocketAddress("127.0.0.1", Configuration.serverPort));
 			server.addSocketAddress(new InetSocketAddress(InetAddress.getLocalHost(),Configuration.serverPort));

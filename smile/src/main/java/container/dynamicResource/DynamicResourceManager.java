@@ -26,8 +26,8 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import connecter.request.Request;
-import connecter.response.Response;
+import connector.request.Request;
+import connector.response.Response;
 import container.Container;
 import container.LoaderFactory;
 import container.dynamicResource.dispatcher.DispatcherManager;
