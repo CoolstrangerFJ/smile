@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,6 +21,7 @@ public class StaticResourceManager {
 	private static ConcurrentHashMap<String, String> mimeMap;
 	private URI webappsUri;
 	private String charset = Configuration.charset;
+	private FileListener fileListener;
 	/**
 	 * 静态资源白名单
 	 */
@@ -28,6 +31,7 @@ public class StaticResourceManager {
 		System.out.println("正在加载MIME列表...");
 		mimeMap = XmlLoader.getMIMEMap();
 		System.out.println("MIME列表加载完成");
+		fileListener = new FileListener(this);
 		scanResource();
 		cacheManager.setStaticResourceContent(staticResourceContent);
 	}
@@ -52,20 +56,47 @@ public class StaticResourceManager {
 			for (File file : files) {
 				fileScanner(file);
 			}
+			Path path = app.toPath();
+			fileListener.register(path);
 		}
-		webappsUri = null;
+		fileListener.start();
+//		webappsUri = null;
 	}
 
 	private void fileScanner(File file) {
+		URI uri = file.toURI();
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
 			for (File subFile : files) {
 				fileScanner(subFile);
 			}
+			Path path = Paths.get(uri);
+			fileListener.register(path);
 		} else {
-			URI uri = file.toURI();
+			System.out.println("path: "+file.toPath().toString());
+			System.out.println("pathToURI: "+webappsUri.relativize(file.toPath().toUri()));
 			staticResourceContent.put("/" + webappsUri.relativize(uri), file);
 		}
+	}
+	
+	private String toRelativizePath(URI uri){
+		return "/"+webappsUri.relativize(uri);
+	}
+	
+	public void removeResource(URI uri){
+		String path = toRelativizePath(uri);
+		staticResourceContent.remove(path);
+		cacheManager.remove(path);
+	}
+	
+	public void createResource(URI uri){
+		String path = toRelativizePath(uri);
+		staticResourceContent.put(path, new File(uri));
+	}
+	
+	public void modifyResource(URI uri){
+		String path = toRelativizePath(uri);
+		cacheManager.remove(path);
 	}
 
 	public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {

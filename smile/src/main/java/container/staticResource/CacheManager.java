@@ -54,9 +54,13 @@ public class CacheManager {
 	}
 
 	public void remove(String path) {
+		System.out.println("remove path: " + path);
 		StaticCache remove = cacheMap.remove(path);
-		long size = remove.getSize();
-		cacheSize.addAndGet(-size);
+		System.out.println("remove: " + remove);
+		if (remove != null) {
+			long size = remove.getSize();
+			cacheSize.addAndGet(-size);
+		}
 	}
 
 	public StaticCache getNotFound() {
@@ -107,7 +111,7 @@ public class CacheManager {
 
 			ByteBuffer buffer = null;
 			synchronized (file) {
-				//拿到锁以后再get一次
+				// 拿到锁以后再get一次
 				cache = cacheMap.get(path);
 				if (cache == null) {
 					// 这里不需要担心doubleCheck问题, 因为这里调用的是一个完整的方法,而不是构造方法,不用担心指令重排
@@ -136,7 +140,7 @@ public class CacheManager {
 			// 直接把缓存块传入response对象,此时直接缓存不能调用array！！！
 
 			ByteBuffer buffer = ByteBuffer.allocateDirect((int) size);
-//			ByteBuffer buffer = ByteBuffer.allocate((int) size);
+			// ByteBuffer buffer = ByteBuffer.allocate((int) size);
 			while (buffer.hasRemaining()) {
 				channel.read(buffer);
 			}
@@ -151,26 +155,26 @@ public class CacheManager {
 		}
 	}
 
-//	private File getFile(String url) {
-//		File resource = null;
-//		if (url.equals("/")) {// 首页
-//			resource = new File(Configuration.WEBAPPS + "root/index.html");
-//		} else {
-//			url = url.replaceFirst("/", "");
-//			resource = new File(Configuration.WEBAPPS + url);
-//			if (resource.exists()) {// 查找静态资源
-//				if (resource.isDirectory()) {
-//					resource = new File(Configuration.WEBAPPS + url + "/index.html");
-//					if (!resource.exists()) {
-//						resource = null;
-//					}
-//				}
-//			} else {
-//				resource = null;
-//			}
-//		}
-//		return resource;
-//	}
+	// private File getFile(String url) {
+	// File resource = null;
+	// if (url.equals("/")) {// 首页
+	// resource = new File(Configuration.WEBAPPS + "root/index.html");
+	// } else {
+	// url = url.replaceFirst("/", "");
+	// resource = new File(Configuration.WEBAPPS + url);
+	// if (resource.exists()) {// 查找静态资源
+	// if (resource.isDirectory()) {
+	// resource = new File(Configuration.WEBAPPS + url + "/index.html");
+	// if (!resource.exists()) {
+	// resource = null;
+	// }
+	// }
+	// } else {
+	// resource = null;
+	// }
+	// }
+	// return resource;
+	// }
 
 	public void setStaticResourceContent(ConcurrentHashMap<String, File> staticResourceContent) {
 		this.staticResourceContent = staticResourceContent;
