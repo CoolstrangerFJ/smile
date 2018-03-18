@@ -5,8 +5,6 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -19,39 +17,41 @@ import connector.response.ResponseWriter;
 import connector.selector.OutputSelector;
 import container.Container;
 import launcher.Configuration;
-import util.Background;
 import util.HashThreadPoolExecutor;
 import util.Worker;
+import util.cleaner.CleanTask;
+import util.cleaner.Cleanable;
+import util.cleaner.CleanerFactory;
 
 /**
  * 这类用于多个线程组之间通信,保存工作状态
+ * 
  * @author CoolStranger
  */
-public class HTTPProcessor implements IProcessor {
+public class HTTPProcessor implements IProcessor, Cleanable {
 
 	private static AtomicInteger concurrency = new AtomicInteger();
 	private static LongAdder qps = new LongAdder();
 	// private static ExecutorService pool;
 	private static HashThreadPoolExecutor pool;
 	private Worker worker;
-	private static ScheduledThreadPoolExecutor cleaner = Background.getInstance().getPool();
 	private static final int SECOND = 1000;
 	private static long delay = Configuration.processorTimeOut * SECOND;
 	private static Container container = Container.getInstance();
+	private static CleanerFactory processorCleanerFactory = new CleanerFactory(Configuration.processorTimeOut * 1000);
+	private CleanTask cleanTask;
 	private SocketChannel socketChannel;
 	private OutputSelector outputSelector;
 	private ConcurrentLinkedQueue<Request> reqQueue = new ConcurrentLinkedQueue<>();
 	private ConcurrentLinkedQueue<ResponseWriter> resQueue = new ConcurrentLinkedQueue<>();
 	private IRequestParser parser;
-	private CleanTask cleanTask;
-	private long lastUsed;
+	private long lastUsedTime;
 	private int invalidCount;
 
 	static {
 		if (Configuration.processorThreadPoolSize > 0) {
 			pool = new HashThreadPoolExecutor(Configuration.processorThreadPoolSize);
-			// pool =
-			// Executors.newFixedThreadPool(Configuration.processorThreadPoolSize);
+
 		} else {
 			throw new RuntimeException();
 		}
@@ -61,7 +61,7 @@ public class HTTPProcessor implements IProcessor {
 		this.socketChannel = socketChannel;
 		parser = ParserFactory.createParser(socketChannel);
 		this.outputSelector = outputSelector;
-		this.cleanTask = new CleanTask(this);
+		this.cleanTask = processorCleanerFactory.getCleanTask(this);
 		updateLastUsed();
 		concurrency.incrementAndGet();
 	}
@@ -87,11 +87,11 @@ public class HTTPProcessor implements IProcessor {
 
 					reqQueue.add(request);
 				}
-				
+
 				if (hasReq) {
 					if (worker == null) {
 						worker = pool.submit(this);
-					}else {
+					} else {
 						worker.submit(this);
 					}
 				}
@@ -209,12 +209,12 @@ public class HTTPProcessor implements IProcessor {
 	}
 
 	public long getLastUsed() {
-		return lastUsed;
+		return lastUsedTime;
 	}
 
 	public void updateLastUsed() {
-		this.lastUsed = System.currentTimeMillis();
-		cleaner.schedule(cleanTask, delay, TimeUnit.MILLISECONDS);
+		this.lastUsedTime = System.currentTimeMillis();
+		cheakLater(cleanTask, delay);
 	}
 
 	/**
@@ -244,16 +244,31 @@ public class HTTPProcessor implements IProcessor {
 	public void reset() {
 		invalidCount = 0;
 	}
-	
-	public static int getConcurrency(){
+
+	public static int getConcurrency() {
 		return concurrency.get();
 	}
-	
-	public static void validate(int newConcurrency){
+
+	public static void validate(int newConcurrency) {
 		concurrency.set(newConcurrency);
 	}
-	
-	public static long getQPSAndReset(){
+
+	public static long getQPSAndReset() {
 		return qps.sumThenReset();
+	}
+
+	@Override
+	public long getLastUsedTime() {
+		return this.lastUsedTime;
+	}
+
+	@Override
+	public void clean() {
+		boolean connected = socketChannel.isConnected();
+		try {
+			close(connected);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

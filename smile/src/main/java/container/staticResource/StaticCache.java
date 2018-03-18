@@ -1,27 +1,24 @@
 package container.staticResource;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import launcher.Configuration;
-import util.Background;
+import util.cleaner.CleanTask;
+import util.cleaner.Cleanable;
+import util.cleaner.CleanerFactory;
 
-public class StaticCache implements Runnable {
+public class StaticCache implements Cleanable {
 
-	private static ScheduledThreadPoolExecutor cleanPool = Background.getInstance().getPool();
-	private static long checkTimeOut = Configuration.CACHE_MAX_INACTIVE_INTERVAL;
-	private static long delay = checkTimeOut + 10;
+	private static long delay = Configuration.CACHE_MAX_INACTIVE_INTERVAL + 10;
+	private static CleanerFactory processorCleanerFactory = new CleanerFactory(Configuration.CACHE_MAX_INACTIVE_INTERVAL);
+	private CleanTask cleanTask = processorCleanerFactory.getCleanTask(this);
 	private CacheManager cacheManager;
 	private String path;
 	private ByteBuffer buffer;
 	private String name;
 	private long lastModified;
-	private long lastUsed;
+	private long lastUsedTime;
 	private long size;
-
-	public StaticCache() {
-	}
 
 	public StaticCache(String path, ByteBuffer buffer, String name, long lastModified, long size,
 			CacheManager cacheManager) {
@@ -31,7 +28,7 @@ public class StaticCache implements Runnable {
 		this.name = name;
 		this.lastModified = lastModified;
 		this.size = size;
-		this.lastUsed = System.currentTimeMillis();
+		this.lastUsedTime = System.currentTimeMillis();
 	}
 
 	public long getSize() {
@@ -67,8 +64,8 @@ public class StaticCache implements Runnable {
 	}
 
 	public ByteBuffer getBuffer() {
-		this.lastUsed = System.currentTimeMillis();
-		cleanPool.schedule(this, delay, TimeUnit.MILLISECONDS);
+		this.lastUsedTime = System.currentTimeMillis();
+		cheakLater(cleanTask, delay);
 		return buffer.slice();
 	}
 
@@ -83,17 +80,15 @@ public class StaticCache implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public long getLastUsedTime() {
+		return lastUsedTime;
+	}
 
-		long curTime = System.currentTimeMillis();
-
-		if (!this.cacheManager.isNeedToClean()) {
-			return;
-		}
-		if ((curTime - this.lastUsed) > checkTimeOut) {
-			this.cacheManager.remove(getPath());
+	@Override
+	public void clean() {
+		if (cacheManager.isNeedToClean()) {
+			cacheManager.remove(getPath());
 			System.out.println("已过时,即将删除：" + this.toString());
 		}
 	}
-
 }
