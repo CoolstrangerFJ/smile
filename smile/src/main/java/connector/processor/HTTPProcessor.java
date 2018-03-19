@@ -66,9 +66,6 @@ public class HTTPProcessor implements IProcessor, Cleanable {
 		concurrency.incrementAndGet();
 	}
 
-	/**
-	 * @see connector.processor.IProcessor#tryRead()
-	 */
 	@Override
 	public void tryRead() {
 		try {
@@ -104,11 +101,6 @@ public class HTTPProcessor implements IProcessor, Cleanable {
 		}
 	}
 
-	/**
-	 *
-	 * @throws IOException
-	 * @see connector.processor.IProcessor#process()
-	 */
 	@Override
 	public void process() throws IOException {
 		Request request = null;
@@ -123,11 +115,6 @@ public class HTTPProcessor implements IProcessor, Cleanable {
 		}
 	}
 
-	/**
-	 *
-	 * @throws IOException
-	 * @see connector.processor.IProcessor#tryWrite()
-	 */
 	@Override
 	public void tryWrite() {
 		try {

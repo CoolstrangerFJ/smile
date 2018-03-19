@@ -10,6 +10,8 @@ import java.lang.ref.WeakReference;
  * 如果要提高复用性可以改为泛型,并且做一个Cleanable接口,里面有getLastUsedTime()和clean()方法
  * 不过StaticCache和Session好像都没有必要使用WeakReference,因为它们基本上不会自行清除自己,所以上面的想法暂时没有实现
  * 
+ * 已实现上述优化,因为本地文件修改后,缓存中的静态资源需要清除,session也顺带修改了
+ * 
  * @author CoolStranger
  * @date 2018年1月11日
  * @time 下午4:35:12

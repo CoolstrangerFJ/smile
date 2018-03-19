@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.smile</groupId>
 	<artifactId>smile-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>pom</packaging>
 	<name>smile-parent</name>
 	<description>A httpserver server with a Servlet Container</description>
@@ -12,7 +12,7 @@
 		<dom4j.version>1.6.1</dom4j.version>
 		<jsp-api.version>2.0</jsp-api.version>
 		<junit.version>4.12</junit.version>
-		<smile-manage.version>0.0.1-SNAPSHOT</smile-manage.version>
+		<smile-manage.version>1.0</smile-manage.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -45,7 +45,6 @@
 	</dependencyManagement>
 	<build>
 		<plugins>
-			<!-- 设置编译版本为1.7 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
